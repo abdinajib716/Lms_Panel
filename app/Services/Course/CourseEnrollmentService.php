@@ -18,6 +18,11 @@ class CourseEnrollmentService extends MediaService
       return CourseEnrollment::with(['user', 'course'])->find($id);
    }
 
+   function getEnrollmentByUserAndCourse(int $userId, int|string $courseId): ?CourseEnrollment
+   {
+      return $this->getEnrollmentByCourseId((int) $courseId, $userId);
+   }
+
    function getEnrollmentByCourseId(int $courseId, int $userId): ?CourseEnrollment
    {
       return CourseEnrollment::where('course_id', $courseId)->where('user_id', $userId)->first();

@@ -265,7 +265,6 @@ class AuthController extends Controller
             'role' => $user->role,
             'status' => $user->status,
             'photo' => $user->photo,
-            'social_links' => $user->social_links,
             'email_verified_at' => $user->email_verified_at,
             'created_at' => $user->created_at,
         ];

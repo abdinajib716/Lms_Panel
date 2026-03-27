@@ -98,10 +98,6 @@ This PRD defines the mobile application for the LMS platform, focusing on **feat
       "role": "student",
       "status": "active",
       "photo": "https://lms.cajiibcreative.com/storage/users/photo.jpg",
-      "social_links": {
-        "facebook": "https://facebook.com/johndoe",
-        "twitter": null
-      },
       "email_verified_at": "2024-01-15T10:30:00.000000Z",
       "created_at": "2024-01-01T00:00:00.000000Z"
     }
@@ -164,7 +160,6 @@ This PRD defines the mobile application for the LMS platform, focusing on **feat
       "role": "student",
       "status": "active",
       "photo": null,
-      "social_links": null,
       "email_verified_at": null,
       "created_at": "2024-12-18T08:00:00.000000Z"
     }
@@ -1459,9 +1454,8 @@ GET /notifications/unread-count
 - Profile photo (with edit overlay)
 - User name
 - Email
-- Social links
 - Statistics (enrolled courses, completed, certificates)
-- Menu items: Edit Profile, Wishlist, Settings, Help, Logout
+- Menu items: Edit Profile, Wishlist, Settings, My Transactions, Help, Logout
 
 **API Endpoint:** `GET /student/profile`
 
@@ -1475,11 +1469,6 @@ GET /notifications/unread-count
       "name": "John Doe",
       "email": "student@example.com",
       "photo": "https://lms.cajiibcreative.com/storage/users/photo.jpg",
-      "social_links": {
-        "facebook": "https://facebook.com/johndoe",
-        "twitter": "https://twitter.com/johndoe",
-        "linkedin": null
-      },
       "email_verified_at": "2024-01-15T10:30:00.000000Z",
       "created_at": "2024-01-01T00:00:00.000000Z"
     },
@@ -1503,7 +1492,6 @@ GET /notifications/unread-count
 ```
 name: John Doe Updated
 photo: [FILE - optional]
-social_links: {"facebook":"https://facebook.com/johndoe","twitter":"https://twitter.com/johndoe"}
 ```
 
 **Response:**
@@ -1516,8 +1504,7 @@ social_links: {"facebook":"https://facebook.com/johndoe","twitter":"https://twit
       "id": 1,
       "name": "John Doe Updated",
       "email": "student@example.com",
-      "photo": "https://lms.cajiibcreative.com/storage/users/photo_new.jpg",
-      "social_links": {...}
+      "photo": "https://lms.cajiibcreative.com/storage/users/photo_new.jpg"
     }
   }
 }
@@ -1543,6 +1530,53 @@ social_links: {"facebook":"https://facebook.com/johndoe","twitter":"https://twit
 {
   "success": true,
   "message": "Password changed successfully"
+}
+```
+
+---
+
+#### 3.12.4 My Transactions
+
+**API Endpoints:**
+
+- `GET /student/transactions`
+- `GET /payment/history`
+
+Both endpoints return the same mobile transaction history payload.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "transactions": [
+      {
+        "id": 1,
+        "reference_id": "TXN-20260327093000-ABC123",
+        "course_id": 12,
+        "phone_number": "252611234567",
+        "amount": "19.99",
+        "currency": "USD",
+        "status": "success",
+        "wallet_type": "evc_plus",
+        "description": "Payment for course: Laravel Basics",
+        "created_at": "2026-03-27T09:30:00.000000Z",
+        "completed_at": "2026-03-27T09:31:02.000000Z",
+        "course": {
+          "id": 12,
+          "title": "Laravel Basics",
+          "slug": "laravel-basics",
+          "thumbnail": "https://lms.cajiibcreative.com/storage/courses/laravel-basics.jpg"
+        }
+      }
+    ],
+    "pagination": {
+      "current_page": 1,
+      "last_page": 1,
+      "per_page": 20,
+      "total": 1
+    }
+  }
 }
 ```
 

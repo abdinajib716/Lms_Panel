@@ -2,41 +2,50 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Enums\UserType;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class VerifyEmailController extends Controller
 {
     /**
-     * Mark the authenticated user's email address as verified.
+     * Mark the user's email address as verified from a signed link.
      */
-    public function __invoke(EmailVerificationRequest $request): RedirectResponse
+    public function __invoke(Request $request, string $id, string $hash): Response|RedirectResponse
     {
-        $adminDashboard = route('dashboard', absolute: false) . '?verified=1';
-        $studentDashboard = route('category.courses', ['category' => 'all'], absolute: false) . '?verified=1';
+        $user = User::findOrFail($id);
 
-        if ($request->user()->hasVerifiedEmail()) {
-            if ($request->user()->role === UserType::STUDENT->value) {
-                return redirect()->intended($studentDashboard);
-            } else {
-                return redirect()->intended($adminDashboard);
-            }
+        if (! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+            abort(403, 'Invalid verification link.');
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            /** @var \Illuminate\Contracts\Auth\MustVerifyEmail $user */
-            $user = $request->user();
+        if ($user->hasVerifiedEmail()) {
+            if (Auth::id() === $user->id) {
+                Auth::logout();
+            }
 
+            return Inertia::render('auth/verify-email-success', [
+                'title' => 'Email Already Verified',
+                'description' => 'This email address is already verified. You can close this browser and return to the mobile app.',
+            ]);
+        }
+
+        if ($user->markEmailAsVerified()) {
             event(new Verified($user));
         }
 
-        if ($request->user()->role === UserType::STUDENT->value) {
-            return redirect()->intended($studentDashboard);
-        } else {
-            return redirect()->intended($adminDashboard);
+        if (Auth::id() === $user->id) {
+            Auth::logout();
         }
+
+        return Inertia::render('auth/verify-email-success', [
+            'title' => 'Email Verified Successfully',
+            'description' => 'Your email has been verified successfully. You can close this browser and return to the mobile app.',
+        ]);
     }
 }

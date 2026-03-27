@@ -33,14 +33,14 @@ Route::prefix('v1')->group(function () {
 
     // Authentication - Strict rate limiting to prevent brute force
     Route::prefix('auth')->middleware('throttle:auth')->group(function () {
-        Route::post('/register', [AuthController::class, 'register']);
+        Route::post('/register', [AuthController::class, 'register'])->middleware('smtpConfig');
         Route::post('/login', [AuthController::class, 'login']);
         Route::post('/google', [AuthController::class, 'googleAuth']);
     });
 
     // Password Reset - Very strict rate limiting
     Route::prefix('auth')->middleware('throttle:password-reset')->group(function () {
-        Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+        Route::post('/forgot-password', [AuthController::class, 'forgotPassword'])->middleware('smtpConfig');
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
     });
 
@@ -68,7 +68,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/user', [AuthController::class, 'user']);
             Route::post('/refresh', [AuthController::class, 'refresh']);
             Route::post('/verify-email/resend', [AuthController::class, 'resendVerification'])
-                ->middleware('throttle:password-reset');
+                ->middleware(['smtpConfig', 'throttle:password-reset']);
         });
 
         // =====================================================================
@@ -88,6 +88,7 @@ Route::prefix('v1')->group(function () {
                 ->middleware('throttle:sensitive');
             Route::post('/change-email', [StudentController::class, 'changeEmail'])
                 ->middleware('throttle:sensitive');
+            Route::get('/transactions', [WaafiPayController::class, 'history']);
         });
 
         // Course Player

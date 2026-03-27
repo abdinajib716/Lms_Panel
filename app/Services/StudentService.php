@@ -9,6 +9,8 @@ use App\Models\Course\CourseEnrollment;
 use App\Models\Course\CourseSection;
 use App\Models\Course\LessonResource;
 use App\Models\Course\SectionQuiz;
+use App\Models\Course\SectionLesson;
+use App\Models\Course\WatchHistory;
 use App\Models\User;
 use App\Services\MediaService;
 use App\Services\Course\CourseEnrollmentService;
@@ -33,6 +35,26 @@ class StudentService extends MediaService
    {
       $user = Auth::user();
       return CourseCart::where('user_id', $user->id)->count();
+   }
+
+   public function getEnrolledCourses(int|string $userId)
+   {
+      return $this->enrollmentService->getEnrollments(['user_id' => $userId]);
+   }
+
+   public function getProfileStats(int|string $userId): array
+   {
+      $enrolledCourses = CourseEnrollment::where('user_id', $userId)->count();
+      $completedCourses = WatchHistory::where('user_id', $userId)
+         ->whereNotNull('completion_date')
+         ->count();
+
+      return [
+         'enrolled_courses' => $enrolledCourses,
+         'completed_courses' => $completedCourses,
+         'certificates' => $completedCourses,
+         'total_watch_time' => $this->formatDuration($this->calculateWatchTimeSeconds($userId)),
+      ];
    }
 
    function getStudentData(?string $tab = 'courses'): array
@@ -83,6 +105,60 @@ class StudentService extends MediaService
       $user->update($filteredData);
 
       return $user;
+   }
+
+   private function calculateWatchTimeSeconds(int|string $userId): int
+   {
+      $lessonIds = WatchHistory::where('user_id', $userId)
+         ->get(['completed_watching'])
+         ->flatMap(function (WatchHistory $watchHistory) {
+            $completedWatching = $watchHistory->completed_watching ?? [];
+
+            return collect($completedWatching)
+               ->filter(fn($item) => ($item['type'] ?? null) === 'lesson' && !empty($item['id']))
+               ->pluck('id');
+         })
+         ->unique()
+         ->values();
+
+      if ($lessonIds->isEmpty()) {
+         return 0;
+      }
+
+      return SectionLesson::whereIn('id', $lessonIds)
+         ->pluck('duration')
+         ->filter()
+         ->sum(fn($duration) => $this->durationToSeconds($duration));
+   }
+
+   private function durationToSeconds(?string $duration): int
+   {
+      if (!$duration) {
+         return 0;
+      }
+
+      $parts = array_map('intval', explode(':', $duration));
+
+      if (count($parts) === 3) {
+         [$hours, $minutes, $seconds] = $parts;
+         return ($hours * 3600) + ($minutes * 60) + $seconds;
+      }
+
+      if (count($parts) === 2) {
+         [$minutes, $seconds] = $parts;
+         return ($minutes * 60) + $seconds;
+      }
+
+      return 0;
+   }
+
+   private function formatDuration(int $seconds): string
+   {
+      $hours = intdiv($seconds, 3600);
+      $minutes = intdiv($seconds % 3600, 60);
+      $remainingSeconds = $seconds % 60;
+
+      return sprintf('%02d:%02d:%02d', $hours, $minutes, $remainingSeconds);
    }
 
    public function getEnrolledCourse(string $id, User $user): Course

@@ -244,7 +244,7 @@
 					"request": {
 						"method": "POST",
 						"header": [{"key": "Accept", "value": "application/json"}],
-						"body": {"mode": "formdata", "formdata": [{"key": "name", "value": "John Doe Updated", "type": "text"}, {"key": "photo", "type": "file", "src": [], "disabled": true}, {"key": "social_links", "value": "{\"facebook\":\"https://facebook.com/johndoe\"}", "type": "text", "disabled": true}]},
+						"body": {"mode": "formdata", "formdata": [{"key": "name", "value": "John Doe Updated", "type": "text"}, {"key": "photo", "type": "file", "src": [], "disabled": true}]},
 						"url": {"raw": "{{base_url}}/student/profile", "host": ["{{base_url}}"], "path": ["student", "profile"]},
 						"description": "Update profile. Supports file upload for photo."
 					}
@@ -267,6 +267,15 @@
 						"body": {"mode": "raw", "raw": "{\n    \"email\": \"newemail@example.com\",\n    \"password\": \"Password123!\"\n}"},
 						"url": {"raw": "{{base_url}}/student/change-email", "host": ["{{base_url}}"], "path": ["student", "change-email"]},
 						"description": "Change account email."
+					}
+				},
+				{
+					"name": "My Transactions",
+					"request": {
+						"method": "GET",
+						"header": [{"key": "Accept", "value": "application/json"}],
+						"url": {"raw": "{{base_url}}/student/transactions", "host": ["{{base_url}}"], "path": ["student", "transactions"]},
+						"description": "Get the authenticated student's payment history for the My Transactions screen."
 					}
 				}
 			]

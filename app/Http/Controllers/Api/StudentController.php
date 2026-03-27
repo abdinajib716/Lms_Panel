@@ -175,6 +175,7 @@ class StudentController extends Controller
     public function profile(Request $request): JsonResponse
     {
         $user = $request->user();
+        $stats = $this->studentService->getProfileStats($user->id);
 
         return response()->json([
             'success' => true,
@@ -185,10 +186,10 @@ class StudentController extends Controller
                     'email' => $user->email,
                     'role' => $user->role,
                     'photo' => $user->photo,
-                    'social_links' => $user->social_links,
                     'email_verified_at' => $user->email_verified_at,
                     'created_at' => $user->created_at,
-                ]
+                ],
+                'stats' => $stats,
             ]
         ]);
     }
@@ -198,7 +199,6 @@ class StudentController extends Controller
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:1024',
-            'social_links' => 'nullable|json',
         ]);
 
         if ($validator->fails()) {
@@ -220,10 +220,6 @@ class StudentController extends Controller
             $user->photo = Storage::url($path);
         }
 
-        if ($request->has('social_links')) {
-            $user->social_links = json_decode($request->social_links, true);
-        }
-
         $user->save();
 
         return response()->json([
@@ -235,7 +231,6 @@ class StudentController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'photo' => $user->photo,
-                    'social_links' => $user->social_links,
                 ]
             ]
         ]);
