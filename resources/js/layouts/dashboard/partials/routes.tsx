@@ -313,12 +313,6 @@ const dashboardRoutes: DashboardRoute[] = [
                   access: ['admin', 'collaborative', 'administrative'],
                },
                {
-                  name: 'Live Class',
-                  slug: routeLastSegment(route('settings.live-class')),
-                  path: route('settings.live-class'),
-                  access: ['admin', 'collaborative', 'administrative'],
-               },
-               {
                   name: 'WhatsApp',
                   slug: routeLastSegment(route('settings.whatsapp')),
                   path: route('settings.whatsapp'),

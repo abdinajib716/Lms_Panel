@@ -94,9 +94,6 @@ Route::prefix('dashboard')->group(function () {
 
         Route::get('settings/maintenance', 'maintenance')->name('settings.maintenance');
 
-        Route::get('settings/live-class', 'live_class')->name('settings.live-class');
-        Route::post('settings/live-class/{id}', 'live_class_update')->name('settings.live-class.update');
-
         Route::get('settings/whatsapp', 'whatsapp')->name('settings.whatsapp');
         Route::post('settings/whatsapp/{id}', 'whatsapp_update')->name('settings.whatsapp.update');
 

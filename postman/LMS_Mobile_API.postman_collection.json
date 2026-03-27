@@ -698,48 +698,6 @@
 			]
 		},
 		{
-			"name": "12. Live Classes",
-			"description": "Live class management.\n\n**Auth Required:** Yes\n\n**Prerequisites:** User must be enrolled.",
-			"item": [
-				{
-					"name": "Course Live Classes",
-					"request": {
-						"method": "GET",
-						"header": [{"key": "Accept", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/live-classes/course/{{course_id}}", "host": ["{{base_url}}"], "path": ["live-classes", "course", "{{course_id}}"]},
-						"description": "Get all live classes for a course."
-					}
-				},
-				{
-					"name": "Get Live Class",
-					"request": {
-						"method": "GET",
-						"header": [{"key": "Accept", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/live-classes/{{live_class_id}}", "host": ["{{base_url}}"], "path": ["live-classes", "{{live_class_id}}"]},
-						"description": "Get live class details."
-					}
-				},
-				{
-					"name": "Get Join Info",
-					"request": {
-						"method": "GET",
-						"header": [{"key": "Accept", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/live-classes/{{live_class_id}}/join", "host": ["{{base_url}}"], "path": ["live-classes", "{{live_class_id}}", "join"]},
-						"description": "Get meeting join info (only when class is live)."
-					}
-				},
-				{
-					"name": "Get Zoom Signature",
-					"request": {
-						"method": "GET",
-						"header": [{"key": "Accept", "value": "application/json"}],
-						"url": {"raw": "{{base_url}}/live-classes/{{live_class_id}}/signature", "host": ["{{base_url}}"], "path": ["live-classes", "{{live_class_id}}", "signature"]},
-						"description": "Get Zoom meeting signature for SDK."
-					}
-				}
-			]
-		},
-		{
 			"name": "13. Enrollment",
 			"description": "Course enrollment management.\n\n**Auth Required:** Yes\n\n**Rate Limit:** 10/min for enrollment actions",
 			"item": [

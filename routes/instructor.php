@@ -14,7 +14,6 @@ use App\Http\Controllers\Course\CurriculumController;
 use App\Http\Controllers\Course\LessonResourceController;
 use App\Http\Controllers\Course\QuestionController;
 use App\Http\Controllers\Course\QuizController;
-use App\Http\Controllers\LiveClassController;
 use App\Http\Controllers\PayoutController;
 
 Route::prefix('dashboard')->group(function () {
@@ -74,9 +73,6 @@ Route::prefix('dashboard')->group(function () {
       Route::delete('quiz/question/delete/{id}', 'delete')->name('quiz.question.delete');
       Route::post('quiz/question/sort/', 'sort')->name('quiz.question.sort');
    });
-
-   // live classes
-   Route::resource('live-class', LiveClassController::class)->only(['store', 'update', 'destroy']);
 
    // course enrolment
    Route::resource('enrollments', CourseEnrollmentController::class)->only(['index']);

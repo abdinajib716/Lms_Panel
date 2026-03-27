@@ -13,7 +13,6 @@ use App\Http\Controllers\Course\CourseWishlistController;
 use App\Http\Controllers\Course\PlayerController;
 use App\Http\Controllers\Course\QuizSubmissionController;
 use App\Http\Controllers\InstructorController;
-use App\Http\Controllers\LiveClassController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UsersController;
@@ -76,10 +75,6 @@ Route::middleware('smtpConfig', 'checkSmtp')->prefix('settings/account')->group(
     Route::post('change-email', [EmailVerificationNotificationController::class, 'update'])->name('account.change-email');
     Route::get('change-email/save', [EmailVerificationNotificationController::class, 'save'])->name('account.save-email');
 });
-
-// Live class routes accessible to both instructors and students
-Route::get('live-class/start/{id}', [LiveClassController::class, 'index'])->name('live-class.start');
-Route::get('live-class/signature/{id}', [LiveClassController::class, 'signature'])->name('live-class.signature');
 
 // users
 Route::delete('users/{id}', [UsersController::class, 'destroy'])->name('users.destroy');

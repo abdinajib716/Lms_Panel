@@ -16,7 +16,6 @@ use App\Services\SettingsService;
 use App\Http\Requests\UpdateSmtpSettingsRequest;
 use App\Http\Requests\UpdateStorageRequest;
 use App\Http\Requests\UpdateWhatsAppSettingsRequest;
-use App\Http\Requests\UpdateZoomConfigRequest;
 use App\Models\Page;
 use App\Services\InstructorService;
 use App\Services\StudentService;
@@ -263,30 +262,6 @@ class SettingController extends Controller
         Artisan::call('optimize:clear');
 
         return redirect(route('system.update.seeder'));
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function live_class(Request $request)
-    {
-        $liveClass = $this->settingsService->getSetting(['type' => 'live_class']);
-
-        return Inertia::render('dashboard/settings/live-class', compact('liveClass'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function live_class_update(UpdateZoomConfigRequest $request, string $id)
-    {
-        try {
-            $this->settingsService->zoomConfigUpdate($request->validated(), $id);
-
-            return back()->with('success', 'Zoom configuration settings updated successfully.');
-        } catch (\Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
     }
 
     /**

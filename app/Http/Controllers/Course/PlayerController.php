@@ -9,7 +9,6 @@ use App\Services\Course\CoursePlayerService;
 use App\Services\Course\CourseReviewService;
 use App\Services\Course\CourseService;
 use App\Services\Course\CourseSectionService;
-use App\Services\LiveClass\ZoomLiveService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -20,7 +19,6 @@ class PlayerController extends Controller
         protected CoursePlayerService $coursePlay,
         protected CourseSectionService $sectionService,
         protected CourseReviewService $reviewService,
-        protected ZoomLiveService $zoomLiveService,
         // protected AssignmentSubmissionService $submissionService,
     ) {}
 
@@ -57,7 +55,6 @@ class PlayerController extends Controller
             $reviews = $this->reviewService->getReviews(['course_id' => $course->id, ...$request->all()], true);
             $userReview = $this->reviewService->userReview($course->id, $user->id);
             $totalReviews = $this->reviewService->totalReviews($course->id);
-            $zoomConfig = $this->zoomLiveService->zoomConfig;
 
             $section = null;
             $totalContent = 0;
@@ -87,7 +84,6 @@ class PlayerController extends Controller
                 'watchHistory' => $watchHistory,
                 'userReview' => $userReview,
                 'totalReviews' => $totalReviews,
-                'zoomConfig' => $zoomConfig,
             ]);
         } catch (\Throwable $th) {
             return redirect()->route('category.courses', ['category' => 'all'])->with('error', $th->getMessage());

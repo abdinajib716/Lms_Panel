@@ -137,16 +137,6 @@ interface PageFields {
    page_slug: string;
 }
 
-interface ZoomConfigFields {
-   zoom_account_email: string;
-   zoom_account_id: string;
-   zoom_client_id: string;
-   zoom_client_secret: string;
-   zoom_web_sdk: boolean;
-   zoom_sdk_client_id: string;
-   zoom_sdk_client_secret: string;
-}
-
 interface ApplicationBackup extends TableCommon {
    backup_name: string;
    source_code_zip: string;

@@ -184,20 +184,6 @@ class SettingsSeeder extends Seeder
                 ],
             ],
             [
-                'type' => 'live_class',
-                'sub_type' => null,
-                'title' => 'Live Class Settings',
-                'fields' => [
-                    'zoom_account_email' => '',
-                    'zoom_account_id' => '',
-                    'zoom_client_id' => '',
-                    'zoom_client_secret' => '',
-                    'zoom_web_sdk' => false,
-                    'zoom_sdk_client_id' => '',
-                    'zoom_sdk_client_secret' => '',
-                ],
-            ],
-            [
                 'type' => 'whatsapp',
                 'sub_type' => null,
                 'title' => 'WhatsApp Support Settings',

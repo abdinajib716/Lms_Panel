@@ -6,7 +6,6 @@ use App\Http\Requests\UpdateStudentProfileRequest;
 use App\Models\Course\WatchHistory;
 use App\Services\Course\CourseEnrollmentService;
 use App\Services\Course\CoursePlayerService;
-use App\Services\LiveClass\ZoomLiveService;
 use App\Services\StudentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +15,6 @@ class StudentController extends Controller
 {
     public function __construct(
         protected StudentService $studentService,
-        protected ZoomLiveService $zoomLiveService,
         protected CoursePlayerService $coursePlayerService,
         protected CourseEnrollmentService $enrollmentService,
     ) {}
@@ -49,7 +47,6 @@ class StudentController extends Controller
         $user = Auth::user();
         $course = $this->studentService->getEnrolledCourse($id, $user);
         $props = $this->studentService->getEnrolledCourseOverview($id, $tab, $user);
-        $zoomConfig = $tab === 'live_classes' ? $this->zoomLiveService->zoomConfig : null;
         $watchHistory = $this->coursePlayerService->getWatchHistory($id, $user->id);
         $completion = $this->coursePlayerService->calculateCompletion($course, $watchHistory);
 
@@ -58,7 +55,6 @@ class StudentController extends Controller
             'tab' => $tab,
             'course' => $course,
             'watchHistory' => $watchHistory,
-            'zoomConfig' => $zoomConfig,
             'completion' => $completion,
         ]);
     }

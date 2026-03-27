@@ -12,7 +12,6 @@ use App\Http\Controllers\Api\QuizController;
 use App\Http\Controllers\Api\AssignmentController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\ForumController;
-use App\Http\Controllers\Api\LiveClassController;
 use App\Http\Controllers\Api\WaafiPayController;
 
 /*
@@ -172,14 +171,6 @@ Route::prefix('v1')->group(function () {
                 ->middleware('throttle:sensitive');
             Route::delete('/{id}', [ForumController::class, 'destroy'])
                 ->middleware('throttle:sensitive');
-        });
-
-        // Live Classes
-        Route::prefix('live-classes')->group(function () {
-            Route::get('/course/{courseId}', [LiveClassController::class, 'index']);
-            Route::get('/{id}', [LiveClassController::class, 'show']);
-            Route::post('/{id}/join', [LiveClassController::class, 'getJoinInfo']);
-            Route::get('/{id}/signature', [LiveClassController::class, 'getZoomSignature']);
         });
 
         // Enrollment - Sensitive operation

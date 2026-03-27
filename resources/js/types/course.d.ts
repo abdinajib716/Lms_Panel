@@ -63,7 +63,6 @@ interface Course extends TableCommon {
    enrollments: Enrollment[];
    enrollments_count?: number;
    instructor_id: number | string;
-   live_classes: CourseLiveClass[];
    assignments: CourseAssignment[];
    course_category: CourseCategory;
    course_category_child?: CourseCategoryChild;
@@ -234,19 +233,6 @@ interface CourseTotalReview {
       stars: number;
       percentage: number;
    }[];
-}
-
-// course_live_classes.ts
-interface CourseLiveClass extends TableCommon {
-   provider: string;
-   class_topic: string;
-   class_date_and_time: string;
-   class_note?: string;
-   additional_info?: any;
-   course_id: number;
-   instructor_id: number;
-   instructor?: Instructor;
-   course: Course;
 }
 
 // course_progress.ts

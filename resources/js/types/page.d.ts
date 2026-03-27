@@ -11,7 +11,6 @@ export interface CoursePlayerProps extends SharedData {
    totalContent: number;
    userReview: CourseReview | null;
    totalReviews: CourseTotalReview;
-   zoomConfig: ZoomConfigFields;
 }
 
 // pages/intro
@@ -54,7 +53,6 @@ export interface StudentCourseProps extends SharedData {
    tab: string;
    course: Course;
    modules: CourseSection[];
-   live_classes: CourseLiveClass[];
    assignments: CourseAssignment[];
    quizzes: CourseSection[];
    resources: CourseSection[];
@@ -64,7 +62,6 @@ export interface StudentCourseProps extends SharedData {
    studentMarks: StudentMarks | null;
    watchHistory: WatchHistory;
    completion: CourseCompletion;
-   zoomConfig: ZoomConfigFields;
 }
 
 // pages/settings/pages

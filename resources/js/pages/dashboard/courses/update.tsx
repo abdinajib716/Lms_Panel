@@ -3,7 +3,7 @@ import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DashboardLayout from '@/layouts/dashboard/layout';
 import { SharedData } from '@/types/global';
 import { router } from '@inertiajs/react';
-import { BookText, CircleDollarSign, FilePenLine, FileText, FlaskConical, FolderInput, Settings, TvMinimalPlay } from 'lucide-react';
+import { BookText, CircleDollarSign, FilePenLine, FileText, FlaskConical, FolderInput, Settings } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { ReactNode } from 'react';
 import Assignment from './partials/assignment';
@@ -11,7 +11,6 @@ import Basic from './partials/basic';
 import CourseUpdateHeader from './partials/course-update-header';
 import Curriculum from './partials/curriculum';
 import Info from './partials/info';
-import LiveClass from './partials/live-class';
 import Media from './partials/media';
 import Pricing from './partials/pricing';
 import SEO from './partials/seo';
@@ -31,7 +30,6 @@ export interface CourseUpdateProps extends SharedData {
    submissions: Pagination<AssignmentSubmission>;
    watchHistory: WatchHistory | null;
    approvalStatus: CourseApprovalValidation;
-   zoomConfig: ZoomConfigFields;
    assignments: CourseAssignment[];
    instructors: Instructor[] | null;
 }
@@ -47,13 +45,6 @@ const Update = (props: CourseUpdateProps) => {
          slug: 'curriculum',
          Icon: FilePenLine,
          Component: Curriculum,
-      },
-      {
-         id: nanoid(),
-         name: button.live_class,
-         slug: 'live-class',
-         Icon: TvMinimalPlay,
-         Component: LiveClass,
       },
       {
          id: nanoid(),

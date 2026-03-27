@@ -884,15 +884,6 @@ GET /courses/search?q=javascript&per_page=20&page=1
         "is_completed": false
       }
     ],
-    "live_classes": [
-      {
-        "id": 1,
-        "title": "Q&A Session - Week 5",
-        "start_time": "2024-12-20T14:00:00.000000Z",
-        "duration": 60,
-        "status": "upcoming"
-      }
-    ],
     "assignments": [
       {
         "id": 1,
@@ -1557,76 +1548,6 @@ social_links: {"facebook":"https://facebook.com/johndoe","twitter":"https://twit
 
 ---
 
-### 3.13 Live Classes Module
-
-#### 3.13.1 Live Class List
-
-**API Endpoint:** `GET /live-classes/course/{courseId}`
-
-**Response Payload:**
-```json
-{
-  "success": true,
-  "data": {
-    "course_id": 1,
-    "live_classes": [
-      {
-        "id": 1,
-        "title": "Q&A Session - React Hooks",
-        "description": "Live Q&A session covering React Hooks topics",
-        "start_time": "2024-12-20T14:00:00.000000Z",
-        "duration": 60,
-        "meeting_provider": "zoom",
-        "status": "upcoming",
-        "can_join": false
-      },
-      {
-        "id": 2,
-        "title": "Project Review Session",
-        "description": "Live review of student projects",
-        "start_time": "2024-12-18T10:00:00.000000Z",
-        "duration": 90,
-        "meeting_provider": "zoom",
-        "status": "live",
-        "can_join": true
-      },
-      {
-        "id": 3,
-        "title": "Introduction Session",
-        "description": "Course introduction and overview",
-        "start_time": "2024-12-10T14:00:00.000000Z",
-        "duration": 45,
-        "meeting_provider": "zoom",
-        "status": "ended",
-        "recording_url": "https://zoom.us/recording/xyz",
-        "can_join": false
-      }
-    ]
-  }
-}
-```
-
----
-
-#### 3.13.2 Join Live Class
-
-**API Endpoint:** `GET /live-classes/{id}/join`
-
-**Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "meeting_id": "123456789",
-    "meeting_password": "abc123",
-    "join_url": "https://zoom.us/j/123456789?pwd=abc123",
-    "provider": "zoom"
-  }
-}
-```
-
----
-
 ### 3.14 Certificate Module
 
 #### 3.14.1 Certificate Screen
@@ -1848,7 +1769,6 @@ GET /certificate/download/{courseId}
 | Course Enrolled | `/courses/{course_id}/player` |
 | Assignment Graded | `/courses/{course_id}/assignments/{assignment_id}` |
 | Quiz Results | `/courses/{course_id}/quizzes/{quiz_id}/results` |
-| Live Class Starting | `/courses/{course_id}/live/{live_class_id}` |
 | New Announcement | `/notifications` |
 
 ---

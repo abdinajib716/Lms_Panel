@@ -19,7 +19,6 @@ use App\Services\Course\CourseSectionService;
 use App\Services\Course\CoursePlayerService;
 use App\Services\Course\CourseWishlistService;
 use App\Services\Course\CourseReviewService;
-use App\Services\LiveClass\ZoomLiveService;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -27,7 +26,6 @@ class CourseController extends Controller
 {
     public function __construct(
         protected CourseService $courseService,
-        protected ZoomLiveService $zoomLiveService,
         protected CourseCategoryService $categoryService,
         protected InstructorService $instructorService,
         protected CourseSectionService $courseSectionService,
@@ -236,7 +234,6 @@ class CourseController extends Controller
         $lastSortValues = $this->courseService->lastSectionLessonSort($course);
         $categories = $this->categoryService->getCategories();
         $categories = $categories['categories'];
-        $zoomConfig = $this->zoomLiveService->zoomConfig;
         $instructors = isAdmin() ? $this->instructorService->getInstructors(['status' => 'approved'], false) : null;
 
         $totalSubmissions = $course->assignments->sum(function ($assignment) {
@@ -264,7 +261,6 @@ class CourseController extends Controller
                 'submissions' => $submissions,
                 'watchHistory' => $watchHistory,
                 'approvalStatus' => $approvalStatus,
-                'zoomConfig' => $zoomConfig,
                 'instructors' => $instructors,
                 'totalSubmissions' => $totalSubmissions,
                 'totalEnrollments' => $totalEnrollments,

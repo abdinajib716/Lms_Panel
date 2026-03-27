@@ -9,7 +9,6 @@ import { ReactNode } from 'react';
 import Layout from './partials/layout';
 import Assignments from './tabs-content/assignments';
 import Certificate from './tabs-content/certificate';
-import LiveClasses from './tabs-content/live_classes';
 import Modules from './tabs-content/modules';
 import Quizzes from './tabs-content/quizzes';
 import Resources from './tabs-content/resources';
@@ -21,10 +20,6 @@ const Course = (props: StudentCourseProps) => {
       {
          value: 'modules',
          label: 'Modules',
-      },
-      {
-         value: 'live_classes',
-         label: 'Live Classes',
       },
       {
          value: 'assignments',
@@ -48,8 +43,6 @@ const Course = (props: StudentCourseProps) => {
       switch (tab) {
          case 'modules':
             return <Modules />;
-         case 'live_classes':
-            return <LiveClasses />;
          case 'assignments':
             return <Assignments />;
          case 'quizzes':

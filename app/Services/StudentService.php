@@ -6,7 +6,6 @@ use App\Models\Course\Course;
 use App\Models\Course\CourseAssignment;
 use App\Models\Course\CourseCart;
 use App\Models\Course\CourseEnrollment;
-use App\Models\Course\CourseLiveClass;
 use App\Models\Course\CourseSection;
 use App\Models\Course\LessonResource;
 use App\Models\Course\SectionQuiz;
@@ -108,11 +107,6 @@ class StudentService extends MediaService
          ])->get();
    }
 
-   public function getCourseLiveClasses(string $course_id)
-   {
-      return CourseLiveClass::where('course_id', $course_id)->get();
-   }
-
    public function getCourseAssignments(string $course_id, User $user)
    {
       return CourseAssignment::with([
@@ -170,7 +164,6 @@ class StudentService extends MediaService
    {
       return [
          'modules' => $tab === 'modules' ? $this->getCourseModules($course_id) : null,
-         'live_classes' => $tab === 'live_classes' ? $this->getCourseLiveClasses($course_id) : null,
          'assignments' => $tab === 'assignments' ? $this->getCourseAssignments($course_id, $user) : null,
          'quizzes' => $tab === 'quizzes' ? $this->getCourseSectionQuizzes($course_id, $user) : null,
          'resources' => $tab === 'resources' ? $this->getCourseLessonResources($course_id) : null,

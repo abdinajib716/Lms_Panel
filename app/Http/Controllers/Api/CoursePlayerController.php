@@ -71,7 +71,6 @@ class CoursePlayerController extends Controller
         $course = Course::with([
             'sections.sectionLessons.resources',
             'sections.sectionQuizzes.quizQuestions',
-            'liveClasses',
             'instructor.user',
         ])->find($courseId);
 
@@ -141,12 +140,6 @@ class CoursePlayerController extends Controller
                 ],
                 'completion' => $completion,
                 'is_completed' => $watchHistory->completion_date !== null,
-                'live_classes' => $course->liveClasses->map(fn($lc) => [
-                    'id' => $lc->id,
-                    'class_topic' => $lc->class_topic,
-                    'class_date_and_time' => $lc->class_date_and_time,
-                    'provider' => $lc->provider,
-                ]),
             ]
         ]);
     }

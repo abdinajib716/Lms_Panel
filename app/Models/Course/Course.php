@@ -60,11 +60,6 @@ class Course extends Model implements HasMedia
         return $this->belongsTo(CourseCategoryChild::class);
     }
 
-    public function live_classes(): HasMany
-    {
-        return $this->hasMany(CourseLiveClass::class)->orderBy('class_date_and_time', 'asc');
-    }
-
     public function assignments(): HasMany
     {
         return $this->hasMany(CourseAssignment::class)->orderBy('created_at', 'desc');

@@ -145,13 +145,6 @@ class StudentController extends Controller
             ];
         });
 
-        $liveClasses = $course->liveClasses->map(fn($lc) => [
-            'id' => $lc->id,
-            'class_topic' => $lc->class_topic,
-            'class_date_and_time' => $lc->class_date_and_time,
-            'provider' => $lc->provider,
-        ]);
-
         $assignments = $course->assignments->map(fn($assignment) => [
             'id' => $assignment->id,
             'title' => $assignment->title,
@@ -171,7 +164,6 @@ class StudentController extends Controller
                 ],
                 'course' => $this->formatCourseDetailed($course),
                 'modules' => $modules,
-                'live_classes' => $liveClasses,
                 'assignments' => $assignments,
                 'completion' => $completion,
                 'watch_history_id' => $watchHistory?->id,

@@ -1,17 +1,12 @@
-import LiveClassStatus from '@/components/live-class-status';
 import Tabs from '@/components/tabs';
-import TiptapRenderer from '@/components/text-editor/tiptap-renderer/client-renderer';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader } from '@/components/ui/card';
+import { CardHeader } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CoursePlayerProps } from '@/types/page';
 import { Link, router, usePage } from '@inertiajs/react';
-import { format, parseISO } from 'date-fns';
-import { Calendar, Clock } from 'lucide-react';
 import Lesson from './lesson';
 import Quiz from './quiz';
 
@@ -26,11 +21,8 @@ interface ContentListProps {
 
 const ContentList = ({ completedContents, courseCompletion }: ContentListProps) => {
    const { props } = usePage<CoursePlayerProps>();
-   const { course, zoomConfig, section, watchHistory, translate } = props;
+   const { course, section, watchHistory, translate } = props;
    const { button, common } = translate;
-
-   // Get live classes from course data
-   const liveClasses = course.live_classes || [];
 
    // Get the last section
    const lastSection = props.course.sections[props.course.sections.length - 1];
@@ -53,9 +45,6 @@ const ContentList = ({ completedContents, courseCompletion }: ContentListProps) 
             <TabsList className="h-12 w-full">
                <TabsTrigger value="lessons" className="h-10 w-full cursor-pointer">
                   {button.lessons}
-               </TabsTrigger>
-               <TabsTrigger value="live-classes" className="h-10 w-full cursor-pointer">
-                  {button.live_classes}
                </TabsTrigger>
             </TabsList>
 
@@ -141,55 +130,6 @@ const ContentList = ({ completedContents, courseCompletion }: ContentListProps) 
                         <p>There is no section added</p>
                      </div>
                   )}
-               </TabsContent>
-               <TabsContent value="live-classes" className="mt-0">
-                  <div className="space-y-4 p-4">
-                     {liveClasses.length <= 0 ? (
-                        <Card className="p-8 text-center">
-                           <Calendar className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-                           <h3 className="mb-2 text-lg font-medium">No Live Classes Scheduled</h3>
-                           <p className="text-gray-500">Schedule your first live class to get started with Zoom.</p>
-                        </Card>
-                     ) : (
-                        liveClasses.map((liveClass) => {
-                           return (
-                              <Card key={liveClass.id} className="space-y-4 p-4">
-                                 <p className="text-base font-medium">{liveClass.class_topic}</p>
-
-                                 <div className="flex items-center justify-between gap-2">
-                                    <div className="text-muted-foreground space-y-3 text-sm">
-                                       <div className="flex items-center gap-2">
-                                          <Clock className="h-4 w-4" />
-                                          <span>{format(parseISO(liveClass.class_date_and_time), 'p')}</span>
-                                       </div>
-                                       <div className="flex items-center gap-2">
-                                          <Calendar className="h-4 w-4" />
-                                          <span>{format(parseISO(liveClass.class_date_and_time), 'PPP')}</span>
-                                       </div>
-                                    </div>
-
-                                    <div className="flex flex-col gap-2">
-                                       <LiveClassStatus courseId={course.id} liveClass={liveClass} zoomConfig={zoomConfig} />
-                                    </div>
-                                 </div>
-
-                                 {liveClass.class_note && (
-                                    <Accordion type="single" collapsible className="w-full">
-                                       <AccordionItem value="item-1" className="bg-muted overflow-hidden rounded-lg border-none">
-                                          <AccordionTrigger className="[&[data-state=open]]:!bg-secondary-lighter px-3 py-1.5 text-sm font-normal hover:no-underline">
-                                             Class Note
-                                          </AccordionTrigger>
-                                          <AccordionContent className="p-3">
-                                             <TiptapRenderer>{liveClass.class_note}</TiptapRenderer>
-                                          </AccordionContent>
-                                       </AccordionItem>
-                                    </Accordion>
-                                 )}
-                              </Card>
-                           );
-                        })
-                     )}
-                  </div>
                </TabsContent>
             </ScrollArea>
          </Tabs>

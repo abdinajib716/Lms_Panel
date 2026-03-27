@@ -148,7 +148,6 @@ class CourseService extends MediaService
          'outcomes',
          'requirements',
          'instructor.user',
-         'live_classes',
          'assignments.submissions',
          'enrollments:id',
          'sections' => function ($query) use ($user) {
