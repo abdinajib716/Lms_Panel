@@ -8,6 +8,13 @@ use Illuminate\Database\Eloquent\Collection;
 
 class CourseCartService
 {
+   public function getCartItem(int $userId, int $courseId): ?CourseCart
+   {
+      return CourseCart::where('user_id', $userId)
+         ->where('course_id', $courseId)
+         ->first();
+   }
+
    public function isInCart(int $userId, int $courseId): bool
    {
       return CourseCart::where('user_id', $userId)
@@ -62,5 +69,17 @@ class CourseCartService
    public function clearCart(int $userId): int
    {
       return CourseCart::where('user_id', $userId)->delete();
+   }
+
+   public function removeCoursesFromCart(int $userId, array $courseIds): int
+   {
+      return CourseCart::where('user_id', $userId)
+         ->whereIn('course_id', $courseIds)
+         ->delete();
+   }
+
+   public function getCartCount(int $userId): int
+   {
+      return CourseCart::where('user_id', $userId)->count();
    }
 }

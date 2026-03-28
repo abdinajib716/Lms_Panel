@@ -39,8 +39,18 @@ class CourseSection extends Model implements HasMedia
         return $this->hasMany(SectionLesson::class)->orderBy('sort', 'asc');
     }
 
+    public function sectionLessons()
+    {
+        return $this->section_lessons();
+    }
+
     public function section_quizzes()
     {
         return $this->hasMany(SectionQuiz::class)->orderBy('created_at', 'desc');
+    }
+
+    public function sectionQuizzes()
+    {
+        return $this->section_quizzes();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Services\Payment;
 
+use App\Models\Course\Course;
 use App\Models\User;
 use App\Enums\UserType;
 use App\Models\Instructor;
@@ -60,6 +61,68 @@ class PaymentService
         }
 
         $this->cartService->clearCart($user_id);
+    }
+
+    public function coursesBuyFromCourseIds(
+        array $courseIds,
+        string $paymentType,
+        string $transactionId,
+        float $taxAmount,
+        float $totalPrice,
+        ?string $couponCode,
+        int|string $userId
+    ): void {
+        $courseIds = array_values(array_unique(array_map('intval', $courseIds)));
+
+        if (empty($courseIds) || PaymentHistory::where('transaction_id', $transactionId)->exists()) {
+            return;
+        }
+
+        $invoice_no = random_int(10000000, 99999999);
+        $instructorRevenue = app('system_settings')->fields['instructor_revenue'];
+        $courses = Course::whereIn('id', $courseIds)->get()->keyBy('id');
+
+        foreach ($courseIds as $courseId) {
+            $course = $courses->get($courseId);
+
+            if (!$course || $this->enrollmentService->getEnrollmentByCourseId($courseId, (int) $userId)) {
+                continue;
+            }
+
+            $instructor = Instructor::find($course->instructor_id);
+
+            $history = PaymentHistory::create([
+                'course_id' => $courseId,
+                'user_id' => $userId,
+                'amount' => $totalPrice,
+                'tax' => $taxAmount,
+                'payment_type' => $paymentType,
+                'coupon' => $couponCode,
+                'transaction_id' => $transactionId,
+                'invoice' => $invoice_no,
+            ]);
+
+            if ($instructor && $instructor->user->role == UserType::ADMIN->value) {
+                $history->update([
+                    'admin_revenue' => $totalPrice,
+                ]);
+            } elseif ($instructor) {
+                $instructorRevenueAmount = $totalPrice * ($instructorRevenue / 100);
+
+                $history->update([
+                    'instructor_revenue' => $instructorRevenueAmount - $taxAmount,
+                    'admin_revenue' => ($totalPrice - $instructorRevenueAmount) + $taxAmount,
+                ]);
+            }
+
+            $this->enrollmentService->createCourseEnroll([
+                'user_id' => $userId,
+                'course_id' => $courseId,
+                'enrollment_type' => 'paid',
+            ]);
+        }
+
+        $this->cartService->removeCoursesFromCart((int) $userId, $courseIds);
     }
 
     /**

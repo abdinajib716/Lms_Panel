@@ -42,6 +42,17 @@ class StudentService extends MediaService
       return $this->enrollmentService->getEnrollments(['user_id' => $userId]);
    }
 
+   public function getEnrollmentById(int|string $id, int|string $userId)
+   {
+      $enrollment = $this->enrollmentService->getEnrollmentById((int) $id);
+
+      if (!$enrollment || (string) $enrollment->user_id !== (string) $userId) {
+         return null;
+      }
+
+      return $enrollment;
+   }
+
    public function getProfileStats(int|string $userId): array
    {
       $enrolledCourses = CourseEnrollment::where('user_id', $userId)->count();

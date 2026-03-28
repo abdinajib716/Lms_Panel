@@ -41,8 +41,18 @@ class SectionQuiz extends Model
         return $this->hasMany(QuizQuestion::class)->orderBy('sort', 'asc');
     }
 
+    public function quizQuestions()
+    {
+        return $this->quiz_questions();
+    }
+
     public function quiz_submissions()
     {
         return $this->hasMany(QuizSubmission::class);
+    }
+
+    public function quizSubmissions()
+    {
+        return $this->quiz_submissions();
     }
 }

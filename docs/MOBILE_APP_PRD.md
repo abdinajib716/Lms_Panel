@@ -1337,6 +1337,64 @@ POST /cart/apply-coupon
 
 ---
 
+#### 3.9.3 Cart Checkout
+
+Flutter cart checkout should use a dedicated cart-level payment endpoint.
+
+**API Endpoints:**
+
+- `POST /payment/initiate-cart`
+- `POST /payment/cart/initiate`
+
+Both routes point to the same backend behavior.
+
+**Request:**
+```json
+{
+  "phone_number": "611234567",
+  "wallet_type": "evc_plus",
+  "coupon_code": "SAVE20"
+}
+```
+
+**Success Response:**
+```json
+{
+  "success": true,
+  "status": "processing",
+  "message": "Payment request sent. Waiting for customer approval...",
+  "transaction_id": 18,
+  "reference_id": "TXN-20260328003000-ABC123",
+  "checkout_type": "cart",
+  "items_count": 2
+}
+```
+
+**Status Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "reference_id": "TXN-20260328003000-ABC123",
+    "status": "success",
+    "amount": "91.99",
+    "course_id": null,
+    "checkout_type": "cart",
+    "course_ids": [2, 5],
+    "enrollment_created": true,
+    "error_message": null
+  }
+}
+```
+
+**Notes:**
+
+- cart checkout uses the server-side cart contents for the authenticated user
+- free courses are rejected from paid cart checkout
+- a single payment transaction can represent multiple cart courses
+
+---
+
 ### 3.10 Wishlist Module
 
 #### 3.10.1 Wishlist Screen

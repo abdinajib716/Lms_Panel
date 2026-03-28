@@ -192,6 +192,10 @@ Route::prefix('v1')->group(function () {
             Route::get('/methods', [WaafiPayController::class, 'methods']);
             Route::post('/initiate', [WaafiPayController::class, 'initiate'])
                 ->middleware('throttle:sensitive');
+            Route::post('/initiate-cart', [WaafiPayController::class, 'initiateCart'])
+                ->middleware('throttle:sensitive');
+            Route::post('/cart/initiate', [WaafiPayController::class, 'initiateCart'])
+                ->middleware('throttle:sensitive');
             Route::post('/status', [WaafiPayController::class, 'status']);
             Route::get('/history', [WaafiPayController::class, 'history']);
         });

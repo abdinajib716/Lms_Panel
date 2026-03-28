@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use App\Models\Course\WatchHistory;
 
 class Course extends Model implements HasMedia
 {
@@ -78,6 +79,11 @@ class Course extends Model implements HasMedia
     public function enrollments(): HasMany
     {
         return $this->hasMany(CourseEnrollment::class)->orderBy('created_at', 'desc');
+    }
+
+    public function watchHistories(): HasMany
+    {
+        return $this->hasMany(WatchHistory::class)->orderBy('created_at', 'desc');
     }
 
     public function faqs(): HasMany

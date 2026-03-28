@@ -33,6 +33,13 @@ class CoursePlayerController extends Controller
 
         $watchHistory = $this->playerService->initializeWatchHistory($user->id, $courseId);
 
+        if (!$watchHistory) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Course content is not available yet'
+            ], 404);
+        }
+
         $course = Course::with([
             'sections.sectionLessons',
             'sections.sectionQuizzes',
@@ -80,6 +87,13 @@ class CoursePlayerController extends Controller
 
         if (!$watchHistory) {
             $watchHistory = $this->playerService->initializeWatchHistory($user->id, $courseId);
+
+            if (!$watchHistory) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Course content is not available yet'
+                ], 404);
+            }
         }
 
         $completion = $this->playerService->getCourseCompletion($course, $watchHistory);

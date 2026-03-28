@@ -47,6 +47,83 @@ class CoursePlayerService
       }
    }
 
+   public function initializeWatchHistory(string $user_id, string $course_id): ?WatchHistory
+   {
+      $watchHistory = $this->getWatchHistory($course_id, $user_id);
+
+      if ($watchHistory) {
+         return $watchHistory;
+      }
+
+      $course = Course::with(['sections.section_lessons', 'sections.section_quizzes'])->find($course_id);
+
+      if (!$course) {
+         return null;
+      }
+
+      $firstLesson = SectionLesson::where('course_id', $course_id)
+         ->orderBy('sort', 'asc')
+         ->first();
+
+      if ($firstLesson) {
+         return $this->watchHistory($course, (string) $firstLesson->id, 'lesson', $user_id);
+      }
+
+      $firstQuiz = SectionQuiz::where('course_id', $course_id)
+         ->orderBy('created_at', 'asc')
+         ->first();
+
+      if ($firstQuiz) {
+         return $this->watchHistory($course, (string) $firstQuiz->id, 'quiz', $user_id);
+      }
+
+      return null;
+   }
+
+   public function getCourseCompletion(Course $course, ?WatchHistory $watchHistory): array
+   {
+      if (!$watchHistory) {
+         $totalItems = 0;
+
+         foreach ($course->sections as $section) {
+            $totalItems += count($section->section_lessons) + count($section->section_quizzes);
+         }
+
+         return [
+            'total_items' => $totalItems,
+            'completed_items' => 0,
+            'completion' => 0,
+         ];
+      }
+
+      return $this->calculateCompletion($course, $watchHistory);
+   }
+
+   public function getLesson(string $lessonId): ?SectionLesson
+   {
+      return SectionLesson::with([
+         'resources',
+         'forums.user',
+         'forums.replies.user',
+      ])->find($lessonId);
+   }
+
+   public function getQuiz(string $quizId): ?SectionQuiz
+   {
+      return SectionQuiz::with([
+         'quizQuestions',
+         'quizSubmissions',
+      ])->find($quizId);
+   }
+
+   public function updateCurrentWatching(WatchHistory $watchHistory, string $contentId, string $contentType): WatchHistory
+   {
+      $course = Course::with(['sections.section_lessons', 'sections.section_quizzes'])
+         ->findOrFail($watchHistory->course_id);
+
+      return $this->watchHistory($course, $contentId, $contentType, (string) $watchHistory->user_id);
+   }
+
    function watchHistory(Course $course, string $watching_id, string $watching_type, string $user_id): WatchHistory
    {
       // Get or create watch history

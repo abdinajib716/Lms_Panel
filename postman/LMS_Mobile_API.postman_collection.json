@@ -499,6 +499,16 @@
 						"url": {"raw": "{{base_url}}/cart/remove-coupon", "host": ["{{base_url}}"], "path": ["cart", "remove-coupon"]},
 						"description": "Remove applied coupon."
 					}
+				},
+				{
+					"name": "Checkout Cart",
+					"request": {
+						"method": "POST",
+						"header": [{"key": "Accept", "value": "application/json"}, {"key": "Content-Type", "value": "application/json"}],
+						"body": {"mode": "raw", "raw": "{\n    \"phone_number\": \"611234567\",\n    \"wallet_type\": \"evc_plus\",\n    \"coupon_code\": \"SAVE20\"\n}"},
+						"url": {"raw": "{{base_url}}/payment/initiate-cart", "host": ["{{base_url}}"], "path": ["payment", "initiate-cart"]},
+						"description": "Initiate a single payment transaction for all items currently in the authenticated user's cart."
+					}
 				}
 			]
 		},

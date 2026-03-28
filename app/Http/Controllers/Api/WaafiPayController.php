@@ -9,7 +9,10 @@ use App\Models\Course\CourseEnrollment;
 use App\Models\Instructor;
 use App\Models\PaymentHistory;
 use App\Models\PaymentTransaction;
+use App\Services\Course\CourseCartService;
+use App\Services\Course\CourseCouponService;
 use App\Services\Course\CourseEnrollmentService;
+use App\Services\Payment\PaymentService;
 use App\Services\Payment\WaafiPayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,6 +25,9 @@ class WaafiPayController extends Controller
     public function __construct(
         private WaafiPayService $waafiPayService,
         private CourseEnrollmentService $enrollmentService,
+        private CourseCartService $cartService,
+        private CourseCouponService $couponService,
+        private PaymentService $paymentService,
     ) {}
 
     /**
@@ -122,6 +128,121 @@ class WaafiPayController extends Controller
     }
 
     /**
+     * Initiate a payment for all items currently in the authenticated user's cart.
+     */
+    public function initiateCart(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'phone_number' => ['required', 'string', 'regex:/^(61|62|63|65|68|71|90)\d{7}$/'],
+            'wallet_type' => ['nullable', 'string', 'in:evc_plus,zaad,jeeb,sahal'],
+            'coupon_code' => ['nullable', 'string'],
+        ]);
+
+        $user = Auth::user();
+        $cart = $this->cartService->getCartItems($user->id);
+
+        if ($cart->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Your cart is empty.',
+            ], 400);
+        }
+
+        $freeCourses = $cart->filter(fn($item) => $item->course?->pricing_type === 'free');
+        if ($freeCourses->isNotEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Free courses cannot be purchased through cart checkout.',
+                'data' => [
+                    'course_ids' => $freeCourses->pluck('course_id')->values(),
+                ],
+            ], 400);
+        }
+
+        $coupon = null;
+        if (!empty($validated['coupon_code'])) {
+            $coupon = $this->couponService->getCoupon($validated['coupon_code']);
+
+            if (!$coupon) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid coupon code.',
+                ], 400);
+            }
+
+            if (!$this->couponService->isCouponValid($coupon)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Coupon has expired.',
+                ], 400);
+            }
+        }
+
+        $existingPending = PaymentTransaction::where('user_id', $user->id)
+            ->whereNull('course_id')
+            ->whereIn('status', ['pending', 'processing'])
+            ->where('created_at', '>=', now()->subMinutes(5))
+            ->first();
+
+        if ($existingPending && $this->isCartTransaction($existingPending)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'A cart payment is already in progress.',
+                'data' => [
+                    'reference_id' => $existingPending->reference_id,
+                    'status' => $existingPending->status,
+                    'checkout_type' => 'cart',
+                ],
+            ]);
+        }
+
+        $calculatedCart = $this->cartService->calculateCart($cart, $coupon);
+        $courseIds = $cart->pluck('course_id')->map(fn($id) => (int) $id)->unique()->values()->all();
+        $courseTitles = $cart->pluck('course.title')->filter()->values();
+
+        $result = $this->waafiPayService->purchase([
+            'phone_number' => $validated['phone_number'],
+            'amount' => $calculatedCart['totalPrice'],
+            'wallet_type' => $validated['wallet_type'] ?? null,
+            'customer_name' => $user->name,
+            'description' => 'Cart checkout for ' . $courseTitles->take(3)->implode(', '),
+            'customer_id' => $user->id,
+            'channel' => 'API',
+            'metadata' => [
+                'checkout_type' => 'cart',
+                'course_ids' => $courseIds,
+                'coupon_code' => $coupon?->code,
+                'items_count' => count($courseIds),
+                'subtotal' => $calculatedCart['subtotal'],
+                'discounted_price' => $calculatedCart['discountedPrice'],
+                'tax_amount' => $calculatedCart['taxAmount'],
+                'total_price' => $calculatedCart['totalPrice'],
+            ],
+        ]);
+
+        $statusCode = $result['success'] ? 200 : 400;
+
+        if (isset($result['error_code']) && $result['error_code'] === 'NOT_CONFIGURED') {
+            $statusCode = 503;
+        }
+
+        if ($result['success']) {
+            $result['checkout_type'] = 'cart';
+            $result['items_count'] = count($courseIds);
+        }
+
+        if ($result['success'] && $result['status'] === 'success') {
+            $transaction = PaymentTransaction::where('reference_id', $result['reference_id'])->first();
+            if ($transaction) {
+                $this->completeCartCheckout($user, $transaction);
+                $result['enrollment_created'] = true;
+            }
+        }
+
+        return response()->json($result, $statusCode);
+    }
+
+    /**
      * Check payment status and auto-enroll on success.
      */
     public function status(Request $request): JsonResponse
@@ -149,15 +270,19 @@ class WaafiPayController extends Controller
         }
 
         // Auto-enroll on success
-        if ($transaction->status === 'success' && $transaction->course_id) {
-            $existingEnrollment = CourseEnrollment::where('user_id', $user->id)
-                ->where('course_id', $transaction->course_id)
-                ->first();
+        if ($transaction->status === 'success') {
+            if ($this->isCartTransaction($transaction)) {
+                $this->completeCartCheckout($user, $transaction);
+            } elseif ($transaction->course_id) {
+                $existingEnrollment = CourseEnrollment::where('user_id', $user->id)
+                    ->where('course_id', $transaction->course_id)
+                    ->first();
 
-            if (!$existingEnrollment) {
-                $course = Course::find($transaction->course_id);
-                if ($course) {
-                    $this->completeEnrollment($user, $course, $transaction->reference_id);
+                if (!$existingEnrollment) {
+                    $course = Course::find($transaction->course_id);
+                    if ($course) {
+                        $this->completeEnrollment($user, $course, $transaction->reference_id);
+                    }
                 }
             }
         }
@@ -169,6 +294,8 @@ class WaafiPayController extends Controller
                 'status' => $transaction->status,
                 'amount' => $transaction->amount,
                 'course_id' => $transaction->course_id,
+                'checkout_type' => $this->isCartTransaction($transaction) ? 'cart' : 'course',
+                'course_ids' => $this->transactionMeta($transaction)['course_ids'] ?? [],
                 'enrollment_created' => $transaction->status === 'success',
                 'error_message' => $transaction->status === 'failed' ? ($transaction->error_message ?? 'Payment failed.') : null,
             ],
@@ -191,6 +318,8 @@ class WaafiPayController extends Controller
             'id' => $tx->id,
             'reference_id' => $tx->reference_id,
             'course_id' => $tx->course_id,
+            'checkout_type' => $this->isCartTransaction($tx) ? 'cart' : 'course',
+            'course_ids' => $this->transactionMeta($tx)['course_ids'] ?? [],
             'phone_number' => $tx->phone_number,
             'amount' => $tx->amount,
             'currency' => $tx->currency,
@@ -234,16 +363,21 @@ class WaafiPayController extends Controller
         if ($result['success'] && isset($result['reference_id'])) {
             $transaction = PaymentTransaction::where('reference_id', $result['reference_id'])->first();
 
-            if ($transaction && $transaction->status === 'success' && $transaction->course_id && $transaction->user_id) {
-                $existingEnrollment = CourseEnrollment::where('user_id', $transaction->user_id)
-                    ->where('course_id', $transaction->course_id)
-                    ->first();
+            if ($transaction && $transaction->status === 'success' && $transaction->user_id) {
+                $user = \App\Models\User::find($transaction->user_id);
 
-                if (!$existingEnrollment) {
-                    $user = \App\Models\User::find($transaction->user_id);
-                    $course = Course::find($transaction->course_id);
-                    if ($user && $course) {
-                        $this->completeEnrollment($user, $course, $transaction->reference_id);
+                if ($user && $this->isCartTransaction($transaction)) {
+                    $this->completeCartCheckout($user, $transaction);
+                } elseif ($transaction->course_id) {
+                    $existingEnrollment = CourseEnrollment::where('user_id', $transaction->user_id)
+                        ->where('course_id', $transaction->course_id)
+                        ->first();
+
+                    if (!$existingEnrollment) {
+                        $course = Course::find($transaction->course_id);
+                        if ($course) {
+                            $this->completeEnrollment($user, $course, $transaction->reference_id);
+                        }
                     }
                 }
             }
@@ -294,5 +428,45 @@ class WaafiPayController extends Controller
                 'enrollment_type' => 'paid',
             ]);
         }, 5);
+    }
+
+    private function completeCartCheckout($user, PaymentTransaction $transaction): void
+    {
+        $meta = $this->transactionMeta($transaction);
+        $courseIds = collect($meta['course_ids'] ?? [])
+            ->map(fn($id) => (int) $id)
+            ->filter()
+            ->values()
+            ->all();
+
+        if (empty($courseIds)) {
+            return;
+        }
+
+        $this->paymentService->coursesBuyFromCourseIds(
+            $courseIds,
+            'waafipay',
+            $transaction->reference_id,
+            (float) ($meta['tax_amount'] ?? 0),
+            (float) ($meta['total_price'] ?? $transaction->amount),
+            $meta['coupon_code'] ?? null,
+            $user->id
+        );
+    }
+
+    private function isCartTransaction(PaymentTransaction $transaction): bool
+    {
+        return ($this->transactionMeta($transaction)['checkout_type'] ?? null) === 'cart';
+    }
+
+    private function transactionMeta(PaymentTransaction $transaction): array
+    {
+        $payload = $transaction->request_payload ?? [];
+
+        if (isset($payload['meta']) && is_array($payload['meta'])) {
+            return $payload['meta'];
+        }
+
+        return [];
     }
 }

@@ -218,8 +218,13 @@ class WaafiPayService
             ],
         ];
 
-        // Store request payload
-        $transaction->update(['request_payload' => $payload]);
+        // Store request payload plus internal checkout metadata when provided.
+        $transaction->update([
+            'request_payload' => [
+                'waafipay' => $payload,
+                'meta' => $params['metadata'] ?? null,
+            ],
+        ]);
 
         try {
             // Make API request
